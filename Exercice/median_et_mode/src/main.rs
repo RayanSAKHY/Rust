@@ -14,7 +14,7 @@ fn main() {
     println!("Mode equal {mode}");
 }
 
-fn calculate_mode(vect: &mut Vec<i32>) -> f32 {
+fn calculate_mode(vect: &[i32]) -> f32 {
     let mut map = HashMap::new();
 
     let mut maxi: i32 = 0;
@@ -30,23 +30,23 @@ fn calculate_mode(vect: &mut Vec<i32>) -> f32 {
         }
     }
 
-    return result;
+    result
 }
 
-fn calculate_median(vect: &mut Vec<i32>) -> f32 {
-    vect.sort();
+fn calculate_median(vect: &Vec<i32>) -> f32 {
+    let mut sorted = vect.clone();
+    sorted.sort();
 
     let len_vect = vect.len();
 
     let median: f32;
     if len_vect % 2 == 0 {
-        median = ((*vect.get(len_vect / 2 - 1).unwrap() + *vect.get(len_vect / 2).unwrap()) as f32)
-            / 2.0;
+        median = ((vect[len_vect / 2 - 1] + vect[len_vect / 2]) as f32) / 2.0;
     } else {
-        median = *vect.get(len_vect / 2).unwrap() as f32;
+        median = vect[len_vect / 2] as f32;
     }
 
-    return median;
+    median
 }
 
 fn create_vect() -> Vec<i32> {
