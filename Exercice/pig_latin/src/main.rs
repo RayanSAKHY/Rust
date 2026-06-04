@@ -3,40 +3,36 @@ use std::io;
 fn main() {
     println!("Which word do you want to translate in Pig Latin");
 
-    let mut word = String::new();
+    let mut sentence = String::new();
 
-    loop {
-        io::stdin()
-            .read_line(&mut word)
-            .expect("Failed to read line");
-
-        match word.trim().parse::<i32>() {
-            Ok(_num) => {
-                println!("Please enter a world");
-                continue;
-            }
-            Err(_) => break,
-        };
-    }
+    io::stdin()
+        .read_line(&mut sentence)
+        .expect("Failed to read line");
 
     let list_vowel = ['a', 'e', 'i', 'y', 'o', 'u'];
 
-    let mut s2 = String::new();
-    let mut s3 = String::new();
+    let mut result = String::new();
+    for word in sentence.split_whitespace() {
+        let mut s2 = String::new();
+        let mut s3 = String::new();
 
-    let mut c: char = word.chars().next().unwrap();
+        let mut chars = word.chars();
 
-    while !list_vowel.contains(&c) {
-        s2.push(c);
-        word.remove(0);
-        c = word.chars().next().unwrap();
+        let mut c: char = chars.next().unwrap();
+
+        while !list_vowel.contains(&c.to_ascii_lowercase()) {
+            s2.push(c);
+            c = chars.next().unwrap();
+        }
+        let rest: String = chars.collect();
+        if s2.is_empty() {
+            s3.push('h');
+        }
+
+        s3.push_str("ay");
+        result.push_str(format!("{rest}{s2}{s3} ").trim());
+        result.push(' ');
     }
-    if s2.is_empty() {
-        s3.push('h');
-    }
 
-    s3.push_str("ay");
-
-    let result = word.trim().to_string() + &s2 + &s3;
     println!("{result}");
 }
