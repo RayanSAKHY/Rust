@@ -4,56 +4,18 @@ use std::io;
 fn main() {
     println!("Welcome to the company list");
 
-    let command_phrase = "Here are the commands:\n1: Adding a new employee\n2: Recover all the employee in a department\n3: Recover all the employee in the company\n4: Quit";
+    let command_phrase = "Here are the commands:\nAdd [Employee name] to [department name]\nList [department name]\nList All\nQuit";
 
-    let mut map = BTreeMap::new();
+    let mut map: BTreeMap<String, Vec<String>> = BTreeMap::new();
     println!("{}", command_phrase);
     loop {
-        let user_input = user_interface("What do you want to do ?");
-
-        match user_input.trim().parse::<i32>() {
-            Ok(num) => {
-                if num < 1 || num > 4 {
-                    println!("Please enter a number between 1 and 4");
-                } else {
-                    action(num, &mut map);
-                    println!("{}", command_phrase);
-                }
-            }
-            Err(_) => {
-                println!("Please enter a number");
-                continue;
-            }
-        }
+        user_interface("What do you want to do ?", &mut map);
     }
 }
 
-fn action(choice: i32, map: &mut BTreeMap<String, Vec<String>>) {
-    match choice {
-        1 => {
-            let name = user_interface("What is the name of the employee ?");
-            let department = user_interface("In what department is he working ?");
-            add_map(map, name, department);
-            println!("{map:?}");
-        }
-        2 => {
-            let department =
-                user_interface("From what department do you want to obtain the list of employee ?");
-            println!("{}", employee_department(department, map));
-        }
-        3 => {
-            for department in map.keys() {
-                println!("{}", employee_department(department.to_string(), map));
-            }
-        }
-        4 => std::process::exit(1),
-        _ => println!("error"),
-    };
-}
-
-fn employee_department(department: String, map: &BTreeMap<String, Vec<String>>) -> String {
+fn employee_department(department: &String, map: &BTreeMap<String, Vec<String>>) -> String {
     let mut phrase = String::new();
-    match map.get(&department) {
+    match map.get(department) {
         Some(vect) => {
             phrase.push_str("Department: ");
             phrase.push_str(department.as_str());
@@ -67,15 +29,16 @@ fn employee_department(department: String, map: &BTreeMap<String, Vec<String>>) 
             phrase.push_str("This department don't exist");
         }
     };
-    return phrase;
+    phrase
 }
 
 fn add_map(map: &mut BTreeMap<String, Vec<String>>, name: String, department: String) {
     let vect = map.entry(department).or_insert(Vec::new());
     vect.push(name);
+    vect.sort();
 }
 
-fn user_interface(question: &str) -> String {
+fn user_interface(question: &str, map: &mut BTreeMap<String, Vec<String>>) {
     println!("{}", question);
 
     let mut user_input = String::new();
@@ -84,5 +47,37 @@ fn user_interface(question: &str) -> String {
         .read_line(&mut user_input)
         .expect("Failed to read line");
 
-    return user_input.trim().to_string();
+    let user_input = user_input.to_lowercase();
+
+    let mut words = user_input.split_whitespace();
+
+    let mut word = words.next().expect("Wrong Input");
+
+    match word {
+        "add" => {
+            let name = words.next().expect("Wrong Input");
+            word = words.next().expect("Wrong Input");
+            if !word.eq("to") {
+                println!("Wrong Input");
+                std::process::exit(1)
+            }
+            let department = words.next().expect("Wrong Input");
+            add_map(map, name.to_string(), department.to_string());
+        }
+        "list" => {
+            word = words.next().expect("Wrong Input");
+            if word.eq("all") {
+                for department in map.keys() {
+                    println!("{}", employee_department(department, map));
+                }
+            } else {
+                println!("{}", employee_department(&word.to_string(), map));
+            }
+        }
+        "quit" => std::process::exit(0),
+        _ => {
+            println!("Wrong Input");
+            std::process::exit(1);
+        }
+    };
 }
